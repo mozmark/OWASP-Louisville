@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Open Web Apps and Security</title>
+  </head>
+  <body>
+    <!-- Your Slides -->
+    <!-- One section is one slide -->
+    <section>
+    <figure> <!-- Figures are used to display images and videos fullpage -->
+      <img src="OWASP-1.jpg">
+    </figure>
+    <div role="note">OWASP logo</div>
+    </section>
+
+    <section>
+    <!-- This is the first slide -->
+    <h1>Open Web Apps and Security</h1>
+    <footer>Mark Goodwin (Mozilla)</footer>
+    </section>
+
+    <section>
+    <h3>About me</h3>
+    <ul>
+      <li>Programmer turned security geek</li>
+      <li>I work for Mozilla</li>
+      <li>I do appsec (Firefox and Web)</li>
+    </ul>
+    <div role="note">
+      <ul>
+        <li>Devtools for Firefox</li>
+        <li>Firefox for Android</li>
+        <li>Firefox OS (bits)</li>
+        <li>Security tools (Plug-n-Hack)</li>
+      </ul>
+      I do security talks because (security epiphany - cold knot in pit of stomach)
+    </div>
+    </section>
+
+    <section>
+    <h3>What's a Web App?</h3>
+    <ul class="incremental">
+      <li>An Application on the Web</li>
+      <li>offline, with device features</li>
+      <li>more specifically, <a href="https://developer.mozilla.org/en-US/docs/Web/Apps">Open Web Apps</a></li>
+    </ul>
+    <div role="note">
+      <p>
+      Applications on the web:
+      <ul>
+        <li>First only information, Then CGIs, SSL (interaction, e-commerce)</li>
+        <li>Then AJAX, websockets, rich, responsive UIs (gmail, maps, google docs)...</li>
+      </ul>
+      </p>
+      <p>
+      We've been making apps on the web for over 15 years. What's the big deal?
+      These were all build for always-connected use.
+      </p>
+      <p>
+      We're talking about Mozilla's proposed Open Web Apps standard here. Google
+      are doing something similar with Chrome packaged apps. There's a hope
+      these will eventually gel together to form a common standard. For devs:
+      new(er) tech for offline, mobile use, etc.
+      </p>
+    </div>
+    </section>
+
+    <section>
+    <h3>How is this different?</h3>
+    <ul class="incremental">
+      <li>Mostly it's not, but:</li>
+      <li>Existing features are new to some</li>
+      <li>There are some new APIs</li>
+    </ul>
+    <div role="note">
+      <p>
+      Mostly the same. Existing websites can be used as 'apps' on FxOS. All of
+      the skills you have already are useful.
+      </p>
+      <p>
+      Existing first time - these have impact:
+      Storage (DOM storage, indexedDB), App cache, CSP
+      </p>
+      <p>
+      New features:
+      Calls, SMS, battery, screen lock, etc.
+      </p>
+    </div>
+    </section>
+
+    <section>
+    <h3>What's actually new?</h3>
+    <ul class="incremental">
+      <li>Describing your app (<a href="https://developer.mozilla.org/en-US/docs/Web/Apps/Manifest">manifests</a>)</li>
+      <li>App <a href="https://developer.mozilla.org/en-US/docs/Web/Apps/Packaged_apps">packaging</a></li>
+      <li>Some <a href="https://developer.mozilla.org/en-US/docs/WebAPI">APIs</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/Apps/App_permissions">Permissions</a></li>
+    </ul>
+    <div role="note">
+      <p>
+      Packaging may be necessary - there are different types of apps (hosted, hosted packaged, privileged, certified)
+      </p>
+      <p>
+      We'd like to, one day, work out ways of eliminating the need for app packaging
+      </p>
+    </div>
+    </section>
+
+
+    <section>
+    <figure> <!-- Figures are used to display images and videos fullpage -->
+      <img src="FirefoxOS.png">
+    </figure>
+    <div role="note">OWASP logo</div>
+    <div role="note">
+      <p>
+      I mentioned certified apps - makes sense to explain how those fit in.
+      </p>
+      <p>
+      People ask if it's based on Android: Yes and no, probably not the way you think. Talk about diagram.
+      </p>
+      <p>
+      Also, sandboxed content processes, etc.
+      </p>
+    </div>
+    </section>
+
+    <section>
+    <h3>Security implications?</h3>
+    <ul class="incremental">
+      <li>You can forget some stuff</li>
+      <li>Mostly, things are the same</li>
+      <li>Some things have new emphasis</li>
+    </ul>
+    <div role="note">
+      <p>
+      Not really talked about security yet...
+      </p>
+      <p>
+      Forget: for packaged apps you needn't worry about ancient browser quirks:
+      No more worrying about IE event leakage across frames, etc.
+      </p>
+      <p>
+      Keep: Focus on the security stuff around the actual platform. The web is
+      still the web. Hosted (non packaged) apps have the same concerns as any
+      web app you've reviewed. CSRF, XSS, UI Redress, etc.
+      </p>
+      <p>
+      Emphasise: Stuff that happens in the client. Because things have to
+      happen offline, this part may have a bigger attack surface than you're
+      used to. Also <b>(and this is important)</b> some existing web features
+      that you may, thus far, have ignored have bigger importance with new APIs
+      </p>
+    </div>
+    </section>
+
+    <section>
+    <h3>More important: DOM XSS</h3>
+    <ul class="incremental">
+      <li>Attack surface - more on the client</li>
+      <li>Sources you're not used to<br> (SMS, contact cards, etc)</li>
+      <li>Experience</li>
+      <li>Libraries and Frameworks</li>
+      <li>Impact - privileged APIs</li>
+    </ul>
+    <div role="note">
+      <p>
+      Attack surface: for some packaged apps, that's <b>all there is</b>.
+      </p>
+      <p>
+      Sources - familiar with sources / sinks? Demo of DOM XSS. e.g. <br>
+      http://people.mozilla.com/~mgoodwin/presentations/20130830/shells/embedder.html<br>
+      #javascript:void(window.parent.location.replace("javascript:new function(){document.domain=document.domain.substring(7); alert(document.domain);}()"))
+      </p>
+      <p>
+      Experience - web devs are used to output encoding on the server - less used to preventing DOM XSS
+      </p>
+      <p>
+      Libraries - devs don't get (as much) help. Worse, stuff that made things safe(r) in the past may fail with CSP (e.g. anecdotally, jquery)
+      </p>
+      <p>
+      Impact - if your app is privileged, an attack can expose more than just the user's session
+      </p>
+    </div>
+    </section>
+
+
+    <section>
+    <h3>More important: CSP</h3>
+    <ul class="incremental">
+      <li>Packaged apps use <a href="https://developer.mozilla.org/en-US/docs/Security/CSP/Introducing_Content_Security_Policy">CSP</a></li>
+      <li>Good news: protects by default</li>
+      <li>Bad news: might break stuff (demo?)</li>
+    </ul>
+    <div role="note">
+      <p>
+      BTW; even better news than "it protects you by default" is that you can provide your own policies in cases where there isn't one (hosted apps), and you can tighten the default on packaged apps.
+      </p>
+    </div>
+    </section>
+
+    <section>
+    <h3>More important: Transport Layer Protection</h3>
+    <ul class="incremental">
+      <li>Not a new issue, but...</li>
+      <li>What about app updates?</li>
+      <li>Particular problem area for 'mobile devs'</li>
+      <li>Use HTTPS for everything</li>
+    </ul>
+    <div role="note">
+      <p>
+      You don't just have to worry about a single session; if an attacker can poison the app cache so the user stays owned.
+      </p>
+      <p>
+      This issue illustrates an important point: Many devs will come from 'mobile' rather than 'web' background.
+      </p>
+      <p>
+      Best practice is to always use HTTPS
+      </p>
+    </div>
+    </section>
+
+    <section>
+    <h2>End!</h2>
+    <ul>
+      <li> Questions? </li>
+      <li> Contact: </li>
+      Twitter: @mr_goodwin<br/>
+      irc: mgoodwin on irc.mozilla.org<br/>
+    </ul>
+    <div role="note">
+      <p>
+      Usually I'd indulge in a "Mozilla stuff" section, but I'm assuming curtis
+      will have bored you all to death about that already ;)
+      </p>
+    </div>
+    </section>
+  </body>
+  <!-- Your Style -->
+  <!-- Define the style of your presentation -->
+
+  <!-- Maybe a font from http://www.google.com/webfonts ? -->
+  <link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet'>
+
+  <style>
+    html, .view body { background-color: black; counter-reset: slideidx; }
+    body, .view section { background-color: white; border-radius: 12px }
+    /* A section is a slide. It's size is 800x600, and this will never change */
+    section, .view head > title {
+      /* The font from Google */
+      font-family: 'Oswald', arial, serif;
+      font-size: 30px;
+    }
+
+    .view section:after {
+      counter-increment: slideidx;
+      content: counter(slideidx, decimal-leading-zero);
+      position: absolute; bottom: -80px; right: 100px;
+      color: white;
+    }
+
+    .view head > title {
+      color: white;
+      text-align: center;
+      margin: 1em 0 1em 0;
+    }
+
+    h1, h2 {
+      margin-top: 200px;
+      text-align: center;
+      font-size: 80px;
+    }
+    h3 {
+      margin: 100px 0 50px 100px;
+    }
+
+    ul {
+      margin: 50px 200px;
+    }
+
+    p {
+      margin: 75px;
+      font-size: 50px;
+    }
+
+    blockquote {
+      height: 100%;
+      background-color: black;
+      color: white;
+      font-size: 60px;
+      padding: 50px;
+    }
+    blockquote:before {
+      content: open-quote;
+    }
+    blockquote:after {
+      content: close-quote;
+    }
+
+    /* Figures are displayed full-page, with the caption
+    on top of the image/video */
+    figure {
+      background-color: black;
+      width: 100%;
+      height: 100%;
+    }
+    figure > * {
+      position: absolute;
+    }
+    figure > img, figure > video {
+      width: 100%; height: 100%;
+    }
+    figcaption {
+      margin: 70px;
+      font-size: 50px;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      padding: 40px;
+      text-align: right;
+      background-color: #F3F4F8;
+      border-top: 1px solid #CCC;
+    }
+
+    /* Transition effect */
+    /* Feel free to change the transition effect for original
+    animations. See here:
+    https://developer.mozilla.org/en/CSS/CSS_transitions
+    How to use CSS3 Transitions: */
+    section {
+      -moz-transition: left 400ms linear 0s;
+      -webkit-transition: left 400ms linear 0s;
+      -ms-transition: left 400ms linear 0s;
+      transition: left 400ms linear 0s;
+    }
+    .view section {
+      -moz-transition: none;
+      -webkit-transition: none;
+      -ms-transition: none;
+      transition: none;
+    }
+
+    .view section[aria-selected] {
+      border: 5px red solid;
+    }
+
+    /* Before */
+    section { left: -150%; }
+    /* Now */
+    section[aria-selected] { left: 0; }
+    /* After */
+    section[aria-selected] ~ section { left: +150%; }
+
+    /* Incremental elements */
+
+    /* By default, visible */
+    .incremental > * { opacity: 1; }
+
+    /* The current item */
+    .incremental > *[aria-selected] { opacity: 1; }
+
+    /* The items to-be-selected */
+    .incremental > *[aria-selected] ~ * { opacity: 0; }
+
+    /* The progressbar, at the bottom of the slides, show the global
+    progress of the presentation. */
+    #progress-bar {
+      height: 2px;
+      background: #AAA;
+    }
+  </style>
+</html>
+<!-- {{{{ dzslides core
+#
+#
+#     __  __  __       .  __   ___  __
+#    |  \  / /__` |    | |  \ |__  /__`
+#    |__/ /_ .__/ |___ | |__/ |___ .__/ core :€
+#
+#
+# The following block of code is not supposed to be edited.
+# But if you want to change the behavior of these slides,
+# feel free to hack it!
+#
+-->
+
+<div id="progress-bar"></div>
+
+<!-- Default Style -->
+<style>
+  * { margin: 0; padding: 0; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
+  [role="note"] { display: none; }
+  body {
+    width: 800px; height: 600px;
+    margin-left: -400px; margin-top: -300px;
+    position: absolute; top: 50%; left: 50%;
+    overflow: hidden;
+    display: none;
+  }
+  .view body {
+    position: static;
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    display: inline-block;
+    overflow: visible; overflow-x: hidden;
+    /* undo Dz.onresize */
+    transform: none !important;
+    -moz-transform: none !important;
+    -webkit-transform: none !important;
+    -o-transform: none !important;
+    -ms-transform: none !important;
+  }
+  .view head, .view head > title { display: block }
+  section {
+    position: absolute;
+    pointer-events: none;
+    width: 100%; height: 100%;
+  }
+  .view section {
+    pointer-events: auto;
+    position: static;
+    width: 800px; height: 600px;
+    margin: -150px -200px;
+    float: left;
+
+    transform: scale(.4);
+    -moz-transform: scale(.4);
+    -webkit-transform: scale(.4);
+    -o-transform: scale(.4);
+    -ms-transform: scale(.4);
+  }
+  .view section > * { pointer-events: none; }
+  section[aria-selected] { pointer-events: auto; }
+  html { overflow: hidden; }
+  html.view { overflow: visible; }
+  body.loaded { display: block; }
+  .incremental {visibility: hidden; }
+  .incremental[active] {visibility: visible; }
+  #progress-bar{
+    bottom: 0;
+    position: absolute;
+    -moz-transition: width 400ms linear 0s;
+    -webkit-transition: width 400ms linear 0s;
+    -ms-transition: width 400ms linear 0s;
+    transition: width 400ms linear 0s;
+  }
+  .view #progress-bar {
+    display: none;
+  }
+</style>
+
+<script>
+  var Dz = {
+    remoteWindows: [],
+    idx: -1,
+    step: 0,
+    html: null,
+    slides: null,
+    progressBar : null,
+    params: {
+      autoplay: "1"
+    }
+  };
+
+  Dz.init = function() {
+    document.body.className = "loaded";
+    this.slides = Array.prototype.slice.call($$("body > section"));
+    this.progressBar = $("#progress-bar");
+    this.html = document.body.parentNode;
+    this.setupParams();
+    this.onhashchange();
+    this.setupTouchEvents();
+    this.onresize();
+    this.setupView();
+  }
+
+  Dz.setupParams = function() {
+    var p = window.location.search.substr(1).split('&');
+    p.forEach(function(e, i, a) {
+      var keyVal = e.split('=');
+      Dz.params[keyVal[0]] = decodeURIComponent(keyVal[1]);
+    });
+    // Specific params handling
+    if (!+this.params.autoplay)
+    $$.forEach($$("video"), function(v){ v.controls = true });
+  }
+
+  Dz.onkeydown = function(aEvent) {
+    // Don't intercept keyboard shortcuts
+    if (aEvent.altKey
+    || aEvent.ctrlKey
+    || aEvent.metaKey
+    || aEvent.shiftKey) {
+      return;
+    }
+    if ( aEvent.keyCode == 37 // left arrow
+    || aEvent.keyCode == 38 // up arrow
+    || aEvent.keyCode == 33 // page up
+    ) {
+      aEvent.preventDefault();
+      this.back();
+    }
+    if ( aEvent.keyCode == 39 // right arrow
+    || aEvent.keyCode == 40 // down arrow
+    || aEvent.keyCode == 34 // page down
+    ) {
+      aEvent.preventDefault();
+      this.forward();
+    }
+    if (aEvent.keyCode == 35) { // end
+      aEvent.preventDefault();
+      this.goEnd();
+    }
+    if (aEvent.keyCode == 36) { // home
+      aEvent.preventDefault();
+      this.goStart();
+    }
+    if (aEvent.keyCode == 32) { // space
+      aEvent.preventDefault();
+      this.toggleContent();
+    }
+    if (aEvent.keyCode == 70) { // f
+      aEvent.preventDefault();
+      this.goFullscreen();
+    }
+    if (aEvent.keyCode == 79) { // o
+      aEvent.preventDefault();
+      this.toggleView();
+    }
+  }
+
+  /* Touch Events */
+
+  Dz.setupTouchEvents = function() {
+    var orgX, newX;
+    var tracking = false;
+
+    var db = document.body;
+    db.addEventListener("touchstart", start.bind(this), false);
+    db.addEventListener("touchmove", move.bind(this), false);
+
+    function start(aEvent) {
+      aEvent.preventDefault();
+      tracking = true;
+      orgX = aEvent.changedTouches[0].pageX;
+    }
+
+    function move(aEvent) {
+      if (!tracking) return;
+      newX = aEvent.changedTouches[0].pageX;
+      if (orgX - newX > 100) {
+        tracking = false;
+        this.forward();
+        } else {
+        if (orgX - newX < -100) {
+          tracking = false;
+          this.back();
+        }
+      }
+    }
+  }
+
+  Dz.setupView = function() {
+    document.body.addEventListener("click", function ( e ) {
+      if (!Dz.html.classList.contains("view")) return;
+      if (!e.target || e.target.nodeName != "SECTION") return;
+
+      Dz.html.classList.remove("view");
+      Dz.setCursor(Dz.slides.indexOf(e.target) + 1);
+    }, false);
+  }
+
+  /* Adapt the size of the slides to the window */
+
+  Dz.onresize = function() {
+    var db = document.body;
+    var sx = db.clientWidth / window.innerWidth;
+    var sy = db.clientHeight / window.innerHeight;
+    var transform = "scale(" + (1/Math.max(sx, sy)) + ")";
+
+    db.style.MozTransform = transform;
+    db.style.WebkitTransform = transform;
+    db.style.OTransform = transform;
+    db.style.msTransform = transform;
+    db.style.transform = transform;
+  }
+
+
+  Dz.getNotes = function(aIdx) {
+    var s = $("section:nth-of-type(" + aIdx + ")");
+    var d = s.$("[role='note']");
+    return d ? d.innerHTML : "";
+  }
+
+  Dz.onmessage = function(aEvent) {
+    var argv = aEvent.data.split(" "), argc = argv.length;
+    argv.forEach(function(e, i, a) { a[i] = decodeURIComponent(e) });
+    var win = aEvent.source;
+    if (argv[0] === "REGISTER" && argc === 1) {
+      this.remoteWindows.push(win);
+      this.postMsg(win, "REGISTERED", document.title, this.slides.length);
+      this.postMsg(win, "CURSOR", this.idx + "." + this.step);
+      return;
+    }
+    if (argv[0] === "BACK" && argc === 1)
+    this.back();
+    if (argv[0] === "FORWARD" && argc === 1)
+    this.forward();
+    if (argv[0] === "START" && argc === 1)
+    this.goStart();
+    if (argv[0] === "END" && argc === 1)
+    this.goEnd();
+    if (argv[0] === "TOGGLE_CONTENT" && argc === 1)
+    this.toggleContent();
+    if (argv[0] === "SET_CURSOR" && argc === 2)
+    window.location.hash = "#" + argv[1];
+    if (argv[0] === "GET_CURSOR" && argc === 1)
+    this.postMsg(win, "CURSOR", this.idx + "." + this.step);
+    if (argv[0] === "GET_NOTES" && argc === 1)
+    this.postMsg(win, "NOTES", this.getNotes(this.idx));
+  }
+
+  Dz.toggleContent = function() {
+    // If a Video is present in this new slide, play it.
+    // If a Video is present in the previous slide, stop it.
+    var s = $("section[aria-selected]");
+    if (s) {
+      var video = s.$("video");
+      if (video) {
+        if (video.ended || video.paused) {
+          video.play();
+          } else {
+          video.pause();
+        }
+      }
+    }
+  }
+
+  Dz.setCursor = function(aIdx, aStep) {
+    // If the user change the slide number in the URL bar, jump
+    // to this slide.
+    aStep = (aStep != 0 && typeof aStep !== "undefined") ? "." + aStep : ".0";
+    window.location.hash = "#" + aIdx + aStep;
+  }
+
+  Dz.onhashchange = function() {
+    var cursor = window.location.hash.split("#"),
+    newidx = 1,
+    newstep = 0;
+    if (cursor.length == 2) {
+      newidx = ~~cursor[1].split(".")[0];
+      newstep = ~~cursor[1].split(".")[1];
+      if (newstep > Dz.slides[newidx - 1].$$('.incremental > *').length) {
+        newstep = 0;
+        newidx++;
+      }
+    }
+    this.setProgress(newidx, newstep);
+    if (newidx != this.idx) {
+      this.setSlide(newidx);
+    }
+    if (newstep != this.step) {
+      this.setIncremental(newstep);
+    }
+    for (var i = 0; i < this.remoteWindows.length; i++) {
+      this.postMsg(this.remoteWindows[i], "CURSOR", this.idx + "." + this.step);
+    }
+  }
+
+  Dz.back = function() {
+    if (this.idx == 1 && this.step == 0) {
+      return;
+    }
+    if (this.step == 0) {
+      this.setCursor(this.idx - 1,
+      this.slides[this.idx - 2].$$('.incremental > *').length);
+      } else {
+      this.setCursor(this.idx, this.step - 1);
+    }
+  }
+
+  Dz.forward = function() {
+    if (this.idx >= this.slides.length &&
+    this.step >= this.slides[this.idx - 1].$$('.incremental > *').length) {
+      return;
+    }
+    if (this.step >= this.slides[this.idx - 1].$$('.incremental > *').length) {
+      this.setCursor(this.idx + 1, 0);
+      } else {
+      this.setCursor(this.idx, this.step + 1);
+    }
+  }
+
+  Dz.goStart = function() {
+    this.setCursor(1, 0);
+  }
+
+  Dz.goEnd = function() {
+    var lastIdx = this.slides.length;
+    var lastStep = this.slides[lastIdx - 1].$$('.incremental > *').length;
+    this.setCursor(lastIdx, lastStep);
+  }
+
+  Dz.toggleView = function() {
+    this.html.classList.toggle("view");
+
+    if (this.html.classList.contains("view")) {
+      $("section[aria-selected]").scrollIntoView(true);
+    }
+  }
+
+  Dz.setSlide = function(aIdx) {
+    this.idx = aIdx;
+    var old = $("section[aria-selected]");
+    var next = $("section:nth-of-type("+ this.idx +")");
+    if (old) {
+      old.removeAttribute("aria-selected");
+      var video = old.$("video");
+      if (video) {
+        video.pause();
+      }
+    }
+    if (next) {
+      next.setAttribute("aria-selected", "true");
+      if (this.html.classList.contains("view")) {
+        next.scrollIntoView();
+      }
+      var video = next.$("video");
+      if (video && !!+this.params.autoplay) {
+        video.play();
+      }
+      } else {
+      // That should not happen
+      this.idx = -1;
+      // console.warn("Slide doesn't exist.");
+    }
+  }
+
+  Dz.setIncremental = function(aStep) {
+    this.step = aStep;
+    var old = this.slides[this.idx - 1].$('.incremental > *[aria-selected]');
+    if (old) {
+      old.removeAttribute('aria-selected');
+    }
+    var incrementals = $$('.incremental');
+    if (this.step <= 0) {
+      $$.forEach(incrementals, function(aNode) {
+        aNode.removeAttribute('active');
+      });
+      return;
+    }
+    var next = this.slides[this.idx - 1].$$('.incremental > *')[this.step - 1];
+    if (next) {
+      next.setAttribute('aria-selected', true);
+      next.parentNode.setAttribute('active', true);
+      var found = false;
+      $$.forEach(incrementals, function(aNode) {
+        if (aNode != next.parentNode)
+        if (found)
+        aNode.removeAttribute('active');
+        else
+        aNode.setAttribute('active', true);
+        else
+        found = true;
+      });
+      } else {
+      setCursor(this.idx, 0);
+    }
+    return next;
+  }
+
+  Dz.goFullscreen = function() {
+    var html = $('html'),
+    requestFullscreen = html.requestFullscreen || html.requestFullScreen || html.mozRequestFullScreen || html.webkitRequestFullScreen;
+    if (requestFullscreen) {
+      requestFullscreen.apply(html);
+    }
+  }
+
+  Dz.setProgress = function(aIdx, aStep) {
+    var slide = $("section:nth-of-type("+ aIdx +")");
+    if (!slide)
+    return;
+    var steps = slide.$$('.incremental > *').length + 1,
+    slideSize = 100 / (this.slides.length - 1),
+    stepSize = slideSize / steps;
+    this.progressBar.style.width = ((aIdx - 1) * slideSize + aStep * stepSize) + '%';
+  }
+
+  Dz.postMsg = function(aWin, aMsg) { // [arg0, [arg1...]]
+    aMsg = [aMsg];
+    for (var i = 2; i < arguments.length; i++)
+    aMsg.push(encodeURIComponent(arguments[i]));
+    aWin.postMessage(aMsg.join(" "), "*");
+  }
+
+  function init() {
+    Dz.init();
+    window.onkeydown = Dz.onkeydown.bind(Dz);
+    window.onresize = Dz.onresize.bind(Dz);
+    window.onhashchange = Dz.onhashchange.bind(Dz);
+    window.onmessage = Dz.onmessage.bind(Dz);
+  }
+
+  window.onload = init;
+</script>
+
+
+<script> // Helpers
+  if (!Function.prototype.bind) {
+    Function.prototype.bind = function (oThis) {
+
+      // closest thing possible to the ECMAScript 5 internal IsCallable
+      // function 
+      if (typeof this !== "function")
+      throw new TypeError(
+      "Function.prototype.bind - what is trying to be fBound is not callable"
+      );
+
+      var aArgs = Array.prototype.slice.call(arguments, 1),
+      fToBind = this,
+      fNOP = function () {},
+      fBound = function () {
+        return fToBind.apply( this instanceof fNOP ? this : oThis || window,
+        aArgs.concat(Array.prototype.slice.call(arguments)));
+      };
+
+      fNOP.prototype = this.prototype;
+      fBound.prototype = new fNOP();
+
+      return fBound;
+    };
+  }
+
+  var $ = (HTMLElement.prototype.$ = function(aQuery) {
+    return this.querySelector(aQuery);
+  }).bind(document);
+
+  var $$ = (HTMLElement.prototype.$$ = function(aQuery) {
+    return this.querySelectorAll(aQuery);
+  }).bind(document);
+
+  $$.forEach = function(nodeList, fun) {
+    Array.prototype.forEach.call(nodeList, fun);
+  }
+
+</script>
+<!-- vim: set fdm=marker: }}} -->
